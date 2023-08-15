@@ -1,3 +1,12 @@
+
+install.packages("here")
+library(here)
+here::here()
+getwd()
+
+setwd("data")
+
+
 nlsy_cols <- c("glasses", "eyesight", "sleep_wkdy", "sleep_wknd",
 							 "id", "nsibs", "samp", "race_eth", "sex", "region",
 							 "income", "res_1980", "res_2002", "age_bir")
@@ -20,3 +29,4 @@ nlsy <- na.omit(nlsy)
 
 setwd("../clean/")
 write_rds(nlsy, "nlsy-complete-cases.rds")
+
