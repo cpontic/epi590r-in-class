@@ -1,0 +1,44 @@
+---
+title: "FinalProjRBootcamp"
+author: "Caroline Ponticelli"
+format: html
+editor: visual
+execute: 
+  cache: true
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(gtsummary)
+library(tidyverse)
+library(here)
+install.packages('scales')
+
+
+adopt <- read_csv(here::here("Finalproj", "data", "Adoptable_Pets.csv"))
+tbl_summary(adopt)
+```
+
+You can add options to executable code like this
+
+```{r}
+tbl_summary(
+  adopt,
+  by = 'Intake Type',
+  include = c('Animal Type', 'Pet Age', Breed, Sex,
+  'Zip Codes',
+  Municipalities))
+
+```
+
+Creating a categorical variable for Pet Age
+```{r}
+if 'Pet Age' = 
+```
