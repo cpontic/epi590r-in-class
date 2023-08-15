@@ -19,26 +19,41 @@ When you click the **Render** button a document will be generated that includes 
 library(gtsummary)
 library(tidyverse)
 library(here)
-install.packages('scales')
+library(scales)
+library(readr)
+library(dplyr)
 
 
 adopt <- read_csv(here::here("Finalproj", "data", "Adoptable_Pets.csv"))
 tbl_summary(adopt)
 ```
 
-You can add options to executable code like this
-
+Only data for dogs and certain variables 
 ```{r}
-tbl_summary(
-  adopt,
+dog_data <- adopt[adopt$`Animal Type` == 'DOG', ]
+
+table1<- tbl_summary(
+  dog_data,
   by = 'Intake Type',
-  include = c('Animal Type', 'Pet Age', Breed, Sex,
-  'Zip Codes',
-  Municipalities))
+  include = c('Pet Age', Breed, 'Pet Size', Sex,
+  ))
 
 ```
 
+```{r}
+#| tabel: tbl-one
+#| tbl-cap: "Dog Shelter Summary Statistics"
+table1
+```
+The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")`
+
 Creating a categorical variable for Pet Age
 ```{r}
-if 'Pet Age' = 
+
+if (dog_data$`Pet Age` == startsWith("1 YEAR")) {dog_data$`Pet Age` = "1-2"}
+
+	table(adopt$"Pet Age")
+if ('Pet Age' startsWith("1 YEAR")), "Age" = "1-2", else if ('Pet Age' = 
+
+emo::ji("dog")
 ```
