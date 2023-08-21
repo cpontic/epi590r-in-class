@@ -22,22 +22,41 @@ library(here)
 library(scales)
 library(readr)
 library(dplyr)
+library(readxl)
 
 
-adopt <- read_csv(here::here("Finalproj", "data", "Adoptable_Pets.csv"))
+adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
 tbl_summary(adopt)
 ```
 
-Only data for dogs and certain variables 
+Only data for dogs and certain variables. 
 ```{r}
 dog_data <- adopt[adopt$`Animal Type` == 'DOG', ]
 
+
+
 table1<- tbl_summary(
   dog_data,
-  by = 'Intake Type',
+  by = 'Shelter Name',
   include = c('Pet Age', Breed, 'Pet Size', Sex,
-  ))
+  ),
+			statistic = list(Breed ~ "10% = {p10}; 90% = {p90}",
+														Sex ~ "min =  {min}; max = {max}",
+														 sleep_wknd ~ "min =  {min}; max = {max}"),
+						digits = list(income ~ c(3, 3),
+													sleep_wkdy~ c(1, 1),
+													sleep_wknd~ c(1, 1)),
+						missing_text = "Missing")|>
+	add_p(test = list(all_continuous() ~ "t.test", #add p value and tells R how you want them. Change the test you want in quotes
+										all_categorical() ~ "chisq.test")) |>
 
+	add_overall(col_label = "**Total**") |>
+	bold_labels() |>
+
+	modify_table_styling(
+		columns = label, rows = label == "Race/ethnicity",
+		footnote = " see https://www.nlsinfo.org/content/cohorts/nlsy79/topical-guide/household/race-ethnicity-immigration-data"
+	)
 ```
 
 ```{r}
@@ -45,7 +64,26 @@ table1<- tbl_summary(
 #| tbl-cap: "Dog Shelter Summary Statistics"
 table1
 ```
-The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")`
+The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")` dogs. 
+
+The majority of dogs in the shelter were of medium size, `r inline_text(table1, row = "Pet Size" level = "MED"` medium dogs. 
+
+```{r}
+table1<- tbl_summary(
+  dog_data,
+  by = 'Intake Type',
+  include = c('Pet Age', Breed, 'Pet Size', Sex,
+  )) |>
+add_p(test = list(all_continuous() ~ "t.test", 
+                    all_categorical() ~ "chisq.test")) |> 
+  add_overall(col_label = "**Total**") |> 
+  bold_labels() |> 
+  modify_footnote(update = everything() ~ NA) |> 
+  modify_header(label = "**Variable**", p.value = "**P**")
+
+
+
+```
 
 Creating a categorical variable for Pet Age
 ```{r}
@@ -53,7 +91,14 @@ Creating a categorical variable for Pet Age
 if (dog_data$`Pet Age` == startsWith("1 YEAR")) {dog_data$`Pet Age` = "1-2"}
 
 	table(adopt$"Pet Age")
-if ('Pet Age' startsWith("1 YEAR")), "Age" = "1-2", else if ('Pet Age' = 
+	
+if ('Pet Age' == ("1 YEAR")) {"Age" = "1-2"}
+	else if ('Pet Age' == "1 YEAR 1 MONTH") {"Age" = "1-2"}
+	else if ('Pet Age' == "1 YEAR 2 MONTH") {"Age" = "1-2"} 
+	else if ('Pet Age' == "1 YEAR 2 MONTH") {"Age" = "1-2"}
+	else if ('Pet Age' == "1 YEAR 3 MONTH") {"Age" = "1-2"}
+	else if ('Pet Age' == "1 YEAR 4 MONTH") {"Age" = "1-2"}
+	else if ('Pet Age' == "1 YEAR 9 MONTH") {"Age" = "1-2"} 
 
 emo::ji("dog")
 ```
