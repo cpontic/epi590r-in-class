@@ -52,31 +52,36 @@ adopt_subset2 <- adopt_subset[, -columns_to_dropp]
 
 ```
 
-Table 1 coding
+I only want the shelters that have complete reports. meaning all 37 months they have data
+```{r}
+shelter_counts <- adopt_subset2 %>%
+  group_by(`Shelter Name`) %>%
+  summarize(count = n())
 
+shelters_to_keep <- shelter_counts %>%
+  filter(count == 37) %>%
+  pull(`Shelter Name`)
+
+completeadopt <- adopt_subset2 %>%
+  filter(`Shelter Name` %in% shelters_to_keep)
+
+```
+
+Table 1 coding
 ```{r}
 table1<- tbl_summary(
-  adopt_subset2,
-  by = 'YEAR',
-  include= c('Shelter Name', starts_with('Canine'), YEAR)) 
+  completeadopt,
+  by = 'Shelter Name',
+  include= c('Shelter Name', starts_with('Canine'), YEAR))
+	
+	
+
 
 table1
 ```
 
 ```{r}
-#  missing_text = "missing")
-install.packages('gt')
-library(gt)
-table1 %>%
-	as_gt()
  
-print(table1)
- 
-table1<- tbl_summary(
-  adopt_subset,
-  by = 'Shelter Name',
-  include = c('Pet Age', Breed, 'Pet Size', Sex,
-  ),
 			statistic = list(Breed ~ "10% = {p10}; 90% = {p90}",
 														Sex ~ "min =  {min}; max = {max}",
 														 sleep_wknd ~ "min =  {min}; max = {max}"),
