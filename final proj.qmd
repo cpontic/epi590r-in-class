@@ -23,20 +23,47 @@ library(scales)
 library(readr)
 library(dplyr)
 library(readxl)
+library(renv)
+install.packages('lubridate')
+library(lubridate)
 
 
 adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
-tbl_summary(adopt)
 ```
 
 Only data for dogs and certain variables. 
 ```{r}
-dog_data <- adopt[adopt$`Animal Type` == 'DOG', ]
+str(adopt)
 
+columns_to_drop <- c(6, 8, 10, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35)
 
+# Drop the specified columns to make a data set with just dog data
+adopt_subset <- adopt[, -columns_to_drop]
 
+```
+
+make months into years
+```{r}
+adopt_subset <- mutate(adopt_subset, YEAR = year(ymd(`Report Period Start`)))
+
+columns_to_dropp <- c(1, 2, 3)
+
+adopt_subset2 <- adopt_subset[, -columns_to_dropp]
+
+```
+
+Table 1 coding
+```{r}
 table1<- tbl_summary(
-  dog_data,
+  adopt_subset,
+  by = 'Shelter Name',
+  missing_text = "missing")
+  
+
+ print(table1)
+ 
+table1<- tbl_summary(
+  adopt_subset,
   by = 'Shelter Name',
   include = c('Pet Age', Breed, 'Pet Size', Sex,
   ),
@@ -67,6 +94,8 @@ table1
 The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")` dogs. 
 
 The majority of dogs in the shelter were of medium size, `r inline_text(table1, row = "Pet Size" level = "MED"` medium dogs. 
+
+The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters by year. 
 
 ```{r}
 table1<- tbl_summary(
