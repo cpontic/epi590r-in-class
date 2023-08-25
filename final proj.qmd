@@ -76,18 +76,20 @@ table1<- tbl_summary(
 	 add_overall(col_label = "**Total**")
 	
 
-
 table1
-```
 
-```{r}
- 
-```
-
-```{r}
 #| table1: tbl-one
 #| tbl-cap: "Table 1: Dog Shelter Statistics"
-table1
+```
+Graph
+```{r}
+hist(completeadopt$'Canine adoption', main= "Histogram: Counts of Dog Adoptions")
+
+abline(v = mean(completeadopt$'Canine adoption'), col= 'blue', lwd = 4)
+```
+
+```{r}
+
 ```
 
 The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")` dogs.
@@ -96,10 +98,21 @@ The majority of dogs in the shelter were of medium size, `r inline_text(table1, 
 
 The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters by year.
 
+my function to do something with the data. 
 ```{r}
+#if numbers are greater then 5 say yes if not than say no 
 
 
+cpfunc1 <- function(data, column_name) {
+  columnvalue <- data[[column_name]]
+  if (all(columnvalue >= 5)) {
+    return('yes')
+  } else {
+    return('no')
+  }
+}
 
+cpfunc1(completeadopt, 'Canine adoption')
 ```
 
 
