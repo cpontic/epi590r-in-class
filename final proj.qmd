@@ -26,6 +26,7 @@ library(dplyr)
 library(readxl)
 library(renv)
 library(lubridate)
+library(broom)
 
 
 adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
@@ -41,20 +42,10 @@ adopt_subset <- adopt[, -columns_to_drop]
 
 ```
 
-make months into years
 
+I only want the shelters that have complete reports. meaning all 37 months they have data even if they have data for the month in question
 ```{r}
-adopt_subset <- mutate(adopt_subset, YEAR = year(ymd(`Report Period Start`)))
-
-columns_to_dropp <- c(1, 2, 3)
-
-adopt_subset2 <- adopt_subset[, -columns_to_dropp]
-
-```
-
-I only want the shelters that have complete reports. meaning all 37 months they have data
-```{r}
-shelter_counts <- adopt_subset2 %>%
+shelter_counts <- adopt_subset %>%
   group_by(`Shelter Name`) %>%
   summarize(count = n())
 
@@ -62,15 +53,24 @@ shelters_to_keep <- shelter_counts %>%
   filter(count == 37) %>%
   pull(`Shelter Name`)
 
-completeadopt <- adopt_subset2 %>%
+completeadopt <- adopt_subset %>%
   filter(`Shelter Name` %in% shelters_to_keep)
+
+```
+
+I want to just have data for a month 2023-07-01
+```{r}
+adopt_subset1 <- mutate(completeadopt, YEAR = year(ymd(`Report Period Start`)))
+
+adoptJuly2023 <- adopt_subset1 %>%
+  filter(`Report Period Start` == ymd("2023-07-01"))
 
 ```
 
 Table 1 coding
 ```{r}
 table1<- tbl_summary(
-  completeadopt,
+  adoptJuly2023,
   by = 'Shelter Name',
   include= c('Shelter Name', starts_with('Canine'), YEAR)) |>
 	 add_overall(col_label = "**Total**")
@@ -81,24 +81,24 @@ table1
 #| table1: tbl-one
 #| tbl-cap: "Table 1: Dog Shelter Statistics"
 ```
-Graph
+
+
+Figure 1:
 ```{r}
 hist(completeadopt$'Canine adoption', main= "Histogram: Counts of Dog Adoptions")
 
 abline(v = mean(completeadopt$'Canine adoption'), col= 'blue', lwd = 4)
+
+mtext("Shows the distribution of dog adoption counts, the blue line is the MEAN", side = 1, line = 4)
 ```
 
-```{r}
+The mean and IQR of number of dogs at the shelter are there because of Owner Surrender is `r inline_text(table1, column = Total, row = "Canine relinquished by owner")`. 
 
-```
+The shelter witht the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF" row = "Canine starting animal count"`. 
 
-The majority of dogs at the shelter are there because of Owner Surrender with `r inline_text(table1, column = "Owner Sur")` dogs.
+The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
 
-The majority of dogs in the shelter were of medium size, `r inline_text(table1, row = "Pet Size" level = "MED"` medium dogs.
-
-The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters by year.
-
-my function to do something with the data. 
+My function to do something with the data. 
 ```{r}
 #if numbers are greater then 5 say yes if not than say no 
 
@@ -115,7 +115,17 @@ cpfunc1 <- function(data, column_name) {
 cpfunc1(completeadopt, 'Canine adoption')
 ```
 
-
+Table 2: Regression ** this isnt working atm 
 ```{r}
+tbl_uvregression(
+	adoptJuly2023,
+	y= 'Canine adoption',
+		include = everything(),
+	method = lm())
+)
+
 
 ```
+
+
+```{r}
