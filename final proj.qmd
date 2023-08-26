@@ -35,7 +35,7 @@ adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
 Only data for dogs and certain variables.
 
 ```{r}
-columns_to_drop <- c(6, 8, 10, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35)
+columns_to_drop <- c(3, 6, 8, 10, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35)
 
 # Drop the specified columns to make a data set with just dog data
 adopt_subset <- adopt[, -columns_to_drop]
@@ -65,14 +65,30 @@ adopt_subset1 <- mutate(completeadopt, YEAR = year(ymd(`Report Period Start`)))
 adoptJuly2023 <- adopt_subset1 %>%
   filter(`Report Period Start` == ymd("2023-07-01"))
 
+columns_to_drop1 <- c(1, 2)
+final1 <- adoptJuly2023[, -columns_to_drop1]
+
 ```
 
-Table 1 coding
+I need to flip my data --> nvm 
 ```{r}
-table1<- tbl_summary(
-  adoptJuly2023,
+
+#final <- t(final1)
+
+#colnames(final) <-  final1$'Shelter Name'
+
+#row_to_drop <- 1
+#finaladopt <- final[-row_to_drop, ]
+```
+
+
+Table 1
+```{r}
+
+table1<- gtsummary::tbl_summary(
+  final1,
   by = 'Shelter Name',
-  include= c('Shelter Name', starts_with('Canine'), YEAR)) |>
+  include= c(`Shelter Name`, starts_with('Canine'), YEAR)) |>
 	 add_overall(col_label = "**Total**")
 	
 
@@ -85,17 +101,21 @@ table1
 
 Figure 1:
 ```{r}
-hist(completeadopt$'Canine adoption', main= "Histogram: Counts of Dog Adoptions")
+hist(final1$`Canine adoption`, main= "Histogram: Counts of Dog Adoptions")
 
-abline(v = mean(completeadopt$'Canine adoption'), col= 'blue', lwd = 4)
+abline(v = mean(final1$'Canine adoption'), col= 'blue', lwd = 4)
 
 mtext("Shows the distribution of dog adoption counts, the blue line is the MEAN", side = 1, line = 4)
+
+#| Figure1: fig-one
+#| fig-cap: "Figure 1: Counts of Dog adoptions"
 ```
 
 The mean and IQR of number of dogs at the shelter are there because of Owner Surrender is `r inline_text(table1, column = Total, row = "Canine relinquished by owner")`. 
 
-The shelter witht the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF" row = "Canine starting animal count"`. 
+The shelter with the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF" row = "Canine starting animal count"`. 
 
+As you can see in @tbl-one there are 81 shelters with complete reporting data.  
 The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
 
 My function to do something with the data. 
@@ -103,28 +123,55 @@ My function to do something with the data.
 #if numbers are greater then 5 say yes if not than say no 
 
 
-cpfunc1 <- function(data, column_name) {
-  columnvalue <- data[[column_name]]
-  if (all(columnvalue >= 5)) {
+cpfunc1 <- function(data, row_name) {
+  rowvalue <- data[[row_name]]
+  if (all(rowvalue >= 5)) {
     return('yes')
   } else {
     return('no')
   }
 }
 
-cpfunc1(completeadopt, 'Canine adoption')
+cpfunc1(final1, 'Canine adoption')
 ```
 
 Table 2: Regression ** this isnt working atm 
 ```{r}
 tbl_uvregression(
-	adoptJuly2023,
+	final1,
 	y= 'Canine adoption',
 		include = everything(),
-	method = lm())
+	method = glm(`Canine adoption` ~ ., data = final1, family = "poisson"))
+
+#because I have counts- I am using a poisson regression model 
+poisson_model <- glm(`Canine adoption` ~ ., data = final1, family = "poisson")
+
+# Print a summary of the Poisson regression model
+summary(poisson_model)
+
+#fit the model using gtsummary package
+tbl <- tbl_uvregression(final1,
+  models = poisson_model,
+  exponentiate = TRUE
 )
 
+# Print the table
+tbl
 
+#trying again new way
+poisson_method <- function(formula, data) {
+  glm(formula, data = data, family = "poisson")
+}
+
+# Create a table summarizing the Poisson regression results
+tbl <- tbl_uvregression(
+  method = poisson_method,
+  y = `Canine adoption`,
+  include = starts_with('Canine'),
+  data = final1,
+  exponentiate = TRUE,
+  tidy_fun = broom.helpers::tidy_parameters
+)
 ```
 
 
