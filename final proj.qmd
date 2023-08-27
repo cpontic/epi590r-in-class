@@ -32,6 +32,16 @@ library(broom)
 adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
 ```
 
+Renv
+
+```{r}
+renv::init()
+
+renv::status()
+
+#my lock file has all the librarys needed
+```
+
 Only data for dogs and certain variables.
 
 ```{r}
@@ -42,8 +52,8 @@ adopt_subset <- adopt[, -columns_to_drop]
 
 ```
 
-
 I only want the shelters that have complete reports. meaning all 37 months they have data even if they have data for the month in question
+
 ```{r}
 shelter_counts <- adopt_subset %>%
   group_by(`Shelter Name`) %>%
@@ -59,6 +69,7 @@ completeadopt <- adopt_subset %>%
 ```
 
 I want to just have data for a month 2023-07-01
+
 ```{r}
 adopt_subset1 <- mutate(completeadopt, YEAR = year(ymd(`Report Period Start`)))
 
@@ -70,19 +81,9 @@ final1 <- adoptJuly2023[, -columns_to_drop1]
 
 ```
 
-I need to flip my data --> nvm 
-```{r}
-
-#final <- t(final1)
-
-#colnames(final) <-  final1$'Shelter Name'
-
-#row_to_drop <- 1
-#finaladopt <- final[-row_to_drop, ]
-```
-
 
 Table 1
+
 ```{r}
 
 table1<- gtsummary::tbl_summary(
@@ -98,8 +99,11 @@ table1
 #| tbl-cap: "Table 1: Dog Shelter Statistics"
 ```
 
+As you can see in @tbl-one there are 81 shelters with complete reporting data.\
+The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
 
 Figure 1:
+
 ```{r}
 hist(final1$`Canine adoption`, main= "Histogram: Counts of Dog Adoptions")
 
@@ -111,14 +115,15 @@ mtext("Shows the distribution of dog adoption counts, the blue line is the MEAN"
 #| fig-cap: "Figure 1: Counts of Dog adoptions"
 ```
 
-The mean and IQR of number of dogs at the shelter are there because of Owner Surrender is `r inline_text(table1, column = Total, row = "Canine relinquished by owner")`. 
+The mean and IQR of the number of dogs at the shelter are there because of Owner Surrender is `r inline_text(table1, column = "Total", row = "Canine relinquished by owner")`.
 
-The shelter with the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF" row = "Canine starting animal count"`. 
+The shelter with the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF", row = "Canine starting animal count")`.
 
-As you can see in @tbl-one there are 81 shelters with complete reporting data.  
-The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
+@fig-hist contains a histogram and @tbl-one a table.
 
-My function to do something with the data. 
+
+My function to do something with the data.
+
 ```{r}
 #if numbers are greater then 5 say yes if not than say no 
 
@@ -133,46 +138,37 @@ cpfunc1 <- function(data, row_name) {
 }
 
 cpfunc1(final1, 'Canine adoption')
+
+print(cpfunc1(final1, 'Canine adoption'))
 ```
 
-Table 2: Regression ** this isnt working atm 
+Table 2: Regression
+
 ```{r}
-tbl_uvregression(
-	final1,
-	y= 'Canine adoption',
-		include = everything(),
-	method = glm(`Canine adoption` ~ ., data = final1, family = "poisson"))
 
-#because I have counts- I am using a poisson regression model 
-poisson_model <- glm(`Canine adoption` ~ ., data = final1, family = "poisson")
 
-# Print a summary of the Poisson regression model
-summary(poisson_model)
+final1 <- rename(final1, Canine_adoption = `Canine adoption`,
+                 Canine_starting_animal_count = `Canine starting animal count`,
+                 Canine_returned_to_owner = `Canine returned to owner`)
 
-#fit the model using gtsummary package
-tbl <- tbl_uvregression(final1,
-  models = poisson_model,
-  exponentiate = TRUE
-)
-
-# Print the table
-tbl
-
-#trying again new way
-poisson_method <- function(formula, data) {
-  glm(formula, data = data, family = "poisson")
-}
-
-# Create a table summarizing the Poisson regression results
-tbl <- tbl_uvregression(
-  method = poisson_method,
-  y = `Canine adoption`,
-  include = starts_with('Canine'),
+tbl2 <- tbl_uvregression(
+  method = glm,
+  y = 'Canine_adoption',
+  include = c('Canine_starting_animal_count', 'Canine_returned_to_owner'),
   data = final1,
-  exponentiate = TRUE,
-  tidy_fun = broom.helpers::tidy_parameters
+  family = poisson()
 )
+
+tbl2
+
+```
+
+As you can see in @tbl2, both confidence intervals are significant with Canine_starting_animal_count of `r inline_text(tbl2, column = 95% CI, row = 'Canine_starting_animal_count')` and Canine returned to owner of `r inline_text(tbl2, column = 95% CI, row = 'Canine_reterned_to_owner')`.
+
+```{r}
+
+
 ```
 
 
-```{r}
+
