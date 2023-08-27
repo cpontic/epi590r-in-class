@@ -4,11 +4,14 @@ author: "Caroline Ponticelli"
 format: html
 editor: visual
 execute: 
-  cache: false
   echo: false
 ---
 
 ```{r}
+#|output: false
+#|messages: false
+#|warning: false
+#|error: false
 library(gtsummary)
 library(tidyverse)
 library(here)
@@ -24,9 +27,8 @@ library(broom)
 adopt <- read_excel(here::here("Finalproj", "data", "shelterreportdata.xlsx"))
 ```
 
-Renv
 
-```{r}
+```{r Renv}
 renv::init()
 
 renv::status()
@@ -34,9 +36,8 @@ renv::status()
 #my lock file has all the librarys needed
 ```
 
-Only data for dogs and certain variables.
 
-```{r}
+```{r Only data for dogs and certain variables.}
 columns_to_drop <- c(3, 6, 8, 10, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35)
 
 # Drop the specified columns to make a data set with just dog data
@@ -44,9 +45,8 @@ adopt_subset <- adopt[, -columns_to_drop]
 
 ```
 
-I only want the shelters that have complete reports. meaning all 37 months they have data even if they have data for the month in question
 
-```{r}
+```{r I only want the shelters that have complete reports. meaning all 37 months they have data even if they have data for the month in question}
 shelter_counts <- adopt_subset %>%
   group_by(`Shelter Name`) %>%
   summarize(count = n())
@@ -60,9 +60,7 @@ completeadopt <- adopt_subset %>%
 
 ```
 
-I want to just have data for a month 2023-07-01
-
-```{r}
+```{r I want to just have data for a month 2023-07-01}
 adopt_subset1 <- mutate(completeadopt, YEAR = year(ymd(`Report Period Start`)))
 
 adoptJuly2023 <- adopt_subset1 %>%
@@ -73,14 +71,13 @@ final1 <- adoptJuly2023[, -columns_to_drop1]
 
 ```
 
-This data is from all the the animal shelters in Georgia, sourced from the Georgia Department of Agriculture. 
+This data is from all the the animal shelters in Georgia, sourced from the Georgia Department of Agriculture. I used only the complete data, which meant the animal shelters have data for all 37 months.
 
-Table 1
 
-```{r}
+```{r Table 1}
 #| table1: tbl-one
 #| label: tbl-one
-#| tbl-cap: "Table 1: Dog Shelter Statistics"
+#| tbl-cap: "Dog Shelter Statistics"
 
 table1<- gtsummary::tbl_summary(
   final1,
@@ -88,34 +85,30 @@ table1<- gtsummary::tbl_summary(
   include= c(`Shelter Name`, starts_with('Canine'), YEAR)) |>
 	 add_overall(col_label = "**Total**")
 	
-
 table1
-
 ```
 
-As you can see in @tbl-one there are 81 shelters with complete reporting data.\
-The reporting periods were originally by month over \~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
 
-Figure 1:
+As you can see in @tbl-one there are 81 shelters with complete reporting data.
 
-```{r}
+
+The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
+
+```{r Figure 1:}
 #| Figure1: fig-hist
 #| label: fig-hist
-#| fig-cap: "Figure 1: Counts of Dog adoptions"
+#| fig-cap: "Counts of Dog adoptions"
 
 hist(final1$`Canine adoption`, main= "Histogram: Counts of Dog Adoptions")
-
 abline(v = mean(final1$'Canine adoption'), col= 'blue', lwd = 4)
-
 mtext("Shows the distribution of dog adoption counts, the blue line is the MEAN", side = 1, line = 4)
-
 
 ```
 
 @fig-hist contains a histogram and @tbl-one a table
 
-My function to do something with the data.
-```{r}
+My function says, if numbers are greater then 5 say yes if not than say no.
+```{r My function to do something with the data.}
 #if numbers are greater then 5 say yes if not than say no 
 
 
@@ -134,12 +127,10 @@ print(cpfunc1(final1, 'Canine adoption'))
 ```
 
 
-Table 2: Regression
-
-```{r}
+```{r Table 2: Regression}
 #| table2: tbl-two
 #| label: tbl-two
-#| tbl-cap: "Table 2: Poisson Regression Dog Shelter Statistics"
+#| tbl-cap: "Poisson Regression Dog Shelter Statistics"
 
 final1 <- rename(final1, Canine_adoption = `Canine adoption`,
                  Canine_starting_animal_count = `Canine starting animal count`,
@@ -154,11 +145,13 @@ tbl2 <- tbl_uvregression(
 )
 
 tbl2
-
-
-
 ```
 
 
-As you can see in @tbl-two, both confidence intervals are significant with Canine_starting_animal_count of `r gtsummary::inline_text(tbl2, variable = "Canine_starting_animal_count")` and Canine returned to owner of `r gtsummary::inline_text(tbl2, variable = "Canine_returned_to_owner")`. 
+As you can see in @tbl-two, both confidence intervals are significant with Canine starting animal count of `r gtsummary::inline_text(tbl2, variable = "Canine_starting_animal_count")` and Canine returned to owner of `r gtsummary::inline_text(tbl2, variable = "Canine_returned_to_owner")` when compared to canine adoptions.  
 
+```{r in line stats}
+
+stat2 <- mean(final1$`Canine shelter euthanasia`)
+```
+There was a mean of `r stat2` dogs who were euthanized in July across all 81 animal shelters. 
