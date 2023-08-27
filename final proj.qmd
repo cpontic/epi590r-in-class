@@ -8,14 +8,6 @@ execute:
   echo: false
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
 library(gtsummary)
 library(tidyverse)
@@ -81,6 +73,7 @@ final1 <- adoptJuly2023[, -columns_to_drop1]
 
 ```
 
+This data is from all the the animal shelters in Georgia, sourced from the Georgia Department of Agriculture. 
 
 Table 1
 
@@ -100,7 +93,7 @@ table1
 ```
 
 As you can see in @tbl-one there are 81 shelters with complete reporting data.\
-The reporting periods were originally by month over ~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
+The reporting periods were originally by month over \~3 years. Now it is just counts for the different shelters over 1 month period - the most recent month of July.
 
 Figure 1:
 
@@ -111,16 +104,9 @@ abline(v = mean(final1$'Canine adoption'), col= 'blue', lwd = 4)
 
 mtext("Shows the distribution of dog adoption counts, the blue line is the MEAN", side = 1, line = 4)
 
-#| Figure1: fig-one
+#| Figure1: fig-hist
 #| fig-cap: "Figure 1: Counts of Dog adoptions"
 ```
-
-The mean and IQR of the number of dogs at the shelter are there because of Owner Surrender is `r inline_text(table1, column = "Total", row = "Canine relinquished by owner")`.
-
-The shelter with the most dogs starting out was LAGRANGE ANIMAL CONTROL CENTER with `r inline_text(table1, column = "LAGRANGE ANIMAL CONTROL CENTER, CITY OF", row = "Canine starting animal count")`.
-
-@fig-hist contains a histogram and @tbl-one a table.
-
 
 My function to do something with the data.
 
@@ -161,14 +147,12 @@ tbl2 <- tbl_uvregression(
 
 tbl2
 
-```
-
-As you can see in @tbl2, both confidence intervals are significant with Canine_starting_animal_count of `r inline_text(tbl2, column = 95% CI, row = 'Canine_starting_animal_count')` and Canine returned to owner of `r inline_text(tbl2, column = 95% CI, row = 'Canine_reterned_to_owner')`.
-
-```{r}
 
 
 ```
 
+@fig-hist contains a histogram and @tbl-one a table
+
+As you can see in @tbl2, both confidence intervals are significant with Canine_starting_animal_count of `r gtsummary::inline_text(tbl2, variable = "Canine_starting_animal_count")` and Canine returned to owner of `r gtsummary::inline_text(tbl2, variable = "Canine_returned_to_owner")`. 
 
 
